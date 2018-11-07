@@ -10,6 +10,7 @@ json_data = json.loads(str_data)
 json_npi_lst = []
 json_name_addr_lst = []
 json_practice_lst = []
+json_full_match_lst = []
 
 for entry in json_data:
 # Read the JSON file to get NPI for each dotor
@@ -22,6 +23,10 @@ for entry in json_data:
 # Read the JSON file to get practice full address
         json_practice_lst.append(each_practice.get("street").lower() + " " + each_practice.get("street_2").lower() + " " +
                                each_practice.get("zip") + " " + each_practice.get("city").lower() + " " + each_practice.get("state").lower())
+# Read the JSON file to get first name + last name + npi + full address for each doctor
+        json_full_match_lst.append(entry["doctor"].get("first_name").lower() + " " + entry["doctor"].get("last_name").lower() + " " +
+                                  entry["doctor"].get("npi") + " " + each_practice.get("street").lower() + " " + each_practice.get("street_2").lower() + " " +
+                                   each_practice.get("zip") + " " + each_practice.get("city").lower() + " " + each_practice.get("state").lower())
 
 #Read match_file.csv file
 csv_data = pd.read_csv('match_file.csv')
@@ -38,14 +43,17 @@ next(readCSV)
 csv_npi_lst = []
 csv_name_addr_lst = []
 csv_practice_lst = []
+csv_full_lst = []
 
 for row in readCSV:
 # Read the CSV data to get NPI for each dotor
         csv_npi_lst.append(row[2])
-# Read the JSON file to get first name + last name + full address for each dotor
+# Read the CSV file to get first name + last name + full address for each dotor
         csv_name_addr_lst.append(row[0].lower() + " " + row[1].lower() + " " + row[3].lower()+ " " + row[4].lower() + " " + row[7] + " " + row[5].lower() + " " + row[6].lower())
-# Read the JSON file to get practice full address for each dotor
+# Read the CSV file to get practice full address for each dotor
         csv_practice_lst.append(row[3].lower()+ " " + row[4].lower() + " " + row[7] + " " + row[5].lower() + " " + row[6].lower())
+# Read the csv file to get name + npi + address for each doctor
+        csv_full_lst.append(row[0].lower() + " " + row[1].lower() + " " + row[2] + " " + row[3].lower()+ " " + row[4].lower() + " " + row[7] + " " + row[5].lower() + " " + row[6].lower())
 
 # of Doctors matched with NPI
 npi_match = []
@@ -68,10 +76,20 @@ for each_practice in json_practice_lst:
     if each_practice in csv_practice_lst: practice_match.append(each_practice)
     else: no_practice_match.append(each_practice)
 
-print("# of total documents scanned:" ,len(json_data))
+# of doctors matched with name, npi and address
+full_match = []
+no_full_match = []
+for each_match in json_full_match_lst:
+    if each_match in csv_full_lst: full_match.append(each_match)
+    else: no_full_match.append(each_match)
+
+
+print("# of Total Documents Scanned by NPI:" ,len(json_data))
+print("# of Total Documents Scanned by name and address:" ,len(json_name_addr_lst))
 print("# of Doctors matched with NPI:" ,len(npi_match))
-print('# of Doctors matched with name and address:' , len(name_addr_match))
-print('# of Practice matched with address:' ,len(practice_match))
 print("# of Doctors not matched with NPI:" ,len(no_npi_match))
+print('# of Doctors matched with name and address:' , len(name_addr_match))
 print('# of Doctors not matched with name and address:' , len(no_name_addr_match))
+print('# of Practice matched with address:' ,len(practice_match))
 print('# of Practice not matched with address:' ,len(no_practice_match))
+print("# of Documents not matched by name, npi and address:" ,len(no_full_match))
